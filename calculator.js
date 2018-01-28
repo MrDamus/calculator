@@ -1,4 +1,4 @@
-let interfaceItems = [
+const interfaceItems = [
   {
       text: '7',
       value: 7,
@@ -65,21 +65,71 @@ let interfaceItems = [
   },
 ];
 
-let calculatorElement = document.getElementById('calculator');
+let currentExpression = '';
 
-let display = document.createElement('div');
+const calculatorElement = document.getElementById('calculator');
+const display = document.createElement('div');
 display.classList.add('calculator-display');
-let clearButton = createButton('CE');
+const clearButton = createButton('CE');
+
+clearButton.addEventListener('click', function () {
+    currentExpression = '';
+    updateDisplay();
+});
 
 calculatorElement.appendChild(display);
 calculatorElement.appendChild(clearButton);
 
 interfaceItems.forEach(function (item) {
-  let b = createButton(item.text);
+    let b = createButton(item.text);
+
+    if (item.value === '=') {
+        b.classList.add('equals');
+
+        b.addEventListener('click', function () {
+            try {
+                currentExpression = '' + Math.decimal(eval(currentExpression), 5);
+            } catch (e) {
+                console.log('Malformed expression');
+                currentExpression = '';
+            }
+            updateDisplay();
+        });
+    } else {
+        if (typeof item.value === 'number') {
+            b.classList.add('number');
+        } else if (item.value === '.') {
+            b.classList.add('decimal');
+        } else {
+            b.classList.add('operation');
+        }
+
+        b.addEventListener('click', function () {
+            if (currentExpression.length >= 9)
+                return;
+
+            currentExpression += '' + item.value;
+            updateDisplay();
+        });
+    }
+
+    calculatorElement.appendChild(b);
+});
+
+Math.decimal = function(n, k) 
+{
+    var factor = Math.pow(10, k+1);
+    n = Math.round(Math.round(n*factor)/10);
+    return n/(factor/10);
+}
+
+function updateDisplay () {
+    display.textContent = currentExpression.substring(0, 9);
+}
 
 function createButton (text) {
-  let b = document.createElement('button');
-  b.textContent = text;
-  b.classList.add('calculator-button');
-  return b;
+    let b = document.createElement('button');
+    b.textContent = text;
+    b.classList.add('calculator-button');
+    return b;
 }
